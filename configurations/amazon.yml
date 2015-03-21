@@ -18,15 +18,15 @@ resource_registry:
   OS::Ceilometer::Alarm : IBM::EC2::Alarm
   OS::Swift::Container : IBM::S3::Bucket
 parameters:
-  mysql-sg: "sg-c1b32aa5"
-  was-liberty-sg: "sg-c5b32aa1"
+  mysql-sg: "TODO"
+  was-liberty-sg: "TODO"
   flavor: "t2.medium" # Burstable Performance Medium Instance
   key_name: "ucdp-demo-key"
   availability_zone: "us-east-1a"
-  network_id_private: "vpc-6c51be09"
+  network_id_private: "TODO"
   ucd_server_url: "http://192.168.27.100:8081"
-  ucd_user: "PasswordIsAuthToken"
-  ucd_password: "37e1a8e3-67b3-4965-8985-72a93fce7aac"
+  ucd_user: "admin"
+  ucd_password: "admin"
   ucd_relay_url: "http://52.0.138.139"
   public_network_id: "TODO"
   ubuntu-trusty-img: "ami-9a562df2"
