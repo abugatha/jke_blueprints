@@ -27,6 +27,6 @@ parameters:
   ucd_server_url: "http://192.168.27.100:8081"
   ucd_user: "admin"
   ucd_password: "admin"
-  ucd_relay_url: "http://52.0.138.139"
+  ucd_relay_url: "TODO"
   public_network_id: "TODO"
   ubuntu-trusty-img: "ami-9a562df2"
