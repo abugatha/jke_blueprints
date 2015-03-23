@@ -48,6 +48,14 @@ parameters:
   was-liberty-sg:
     type: string
     description: The security group for WAS Liberty (allows for communication over ports 9080 9443)
+  agent_timeout:
+    type: string
+    description: Generated
+    default: '720'
+  component_process_timeout:
+    type: string
+    description: Generated
+    default: '720'
 resources:
 
   jke-db:
@@ -70,14 +78,14 @@ resources:
       apply_config: { get_resource: jke.db_sw_config }
       server: jke-db
       version: "LATEST"
-      agent_timeout: "360"
+      agent_timeout: { get_param: agent_timeout }
 
   jke.db_sw_config:
     type: IBM::UrbanCode::SoftwareConfig::UCD
     properties:
       name: "jke.db"
       component_process: deploy
-      component_process_timeout: "300"
+      component_process_timeout: { get_param: component_process_timeout }
       ucd_server_url: { get_param: ucd_server_url } # these should come from resource_tree
       ucd_username: { get_param: ucd_user }
       ucd_password: { get_param: ucd_password }
@@ -91,14 +99,14 @@ resources:
       apply_config: { get_resource: MySQL_Server_sw_config }
       server: jke-db
       version: "LATEST"
-      agent_timeout: "360"
+      agent_timeout: { get_param: agent_timeout }  # Generated
 
   MySQL_Server_sw_config:
     type: IBM::UrbanCode::SoftwareConfig::UCD
     properties:
       name: "MySQL Server"
       component_process: deploy
-      component_process_timeout: "300"
+      component_process_timeout: { get_param: component_process_timeout }  # Generated
       ucd_server_url: { get_param: ucd_server_url } # these should come from resource_tree
       ucd_username: { get_param: ucd_user }
       ucd_password: { get_param: ucd_password }
@@ -145,14 +153,14 @@ resources:
       apply_config: { get_resource: jke.war_sw_config }
       server: jke-app-srv
       version: "LATEST"
-      agent_timeout: "360"
+      agent_timeout: { get_param: agent_timeout }  # Generated
 
   jke.war_sw_config:
     type: IBM::UrbanCode::SoftwareConfig::UCD
     properties:
       name: "jke.war"
       component_process: deploy
-      component_process_timeout: "300"
+      component_process_timeout: { get_param: component_process_timeout }  # Generated
       ucd_server_url: { get_param: ucd_server_url } # these should come from resource_tree
       ucd_username: { get_param: ucd_user }
       ucd_password: { get_param: ucd_password }
@@ -168,14 +176,14 @@ resources:
       apply_config: { get_resource: WebSphere_Liberty_Profile_sw_config }
       server: jke-app-srv
       version: "LATEST"
-      agent_timeout: "360"
+      agent_timeout: { get_param: agent_timeout }  # Generated
 
   WebSphere_Liberty_Profile_sw_config:
     type: IBM::UrbanCode::SoftwareConfig::UCD
     properties:
       name: "WebSphere Liberty Profile"
       component_process: deploy
-      component_process_timeout: "300"
+      component_process_timeout: { get_param: component_process_timeout }  # Generated
       ucd_server_url: { get_param: ucd_server_url } # these should come from resource_tree
       ucd_username: { get_param: ucd_user }
       ucd_password: { get_param: ucd_password }
