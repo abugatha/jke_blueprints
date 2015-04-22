@@ -18,10 +18,14 @@ resource_registry:
   OS::Ceilometer::Alarm : IBM::EC2::Alarm
   OS::Swift::Container : IBM::S3::Bucket
 parameters:
+  mysql-bin-dir: /usr/bin
+  liberty-install-dir: /opt/was/liberty
+  server-img: "ami-9a562df2"
+  timeout: "1440"
   mysql-sg: "TODO"
   was-liberty-sg: "TODO"
   flavor: "t2.medium" # Burstable Performance Medium Instance
-  key_name: "TODO"
+  key_name: "ucdp-demo-key"
   availability_zone: "us-east-1a"
   private_network: "TODO"
   ucd_server_url: "http://192.168.27.100:8081"
@@ -29,4 +33,3 @@ parameters:
   ucd_password: "admin"
   ucd_relay_url: "TODO"
   public_network: "TODO"
-  ubuntu-trusty-img: "ami-9a562df2"

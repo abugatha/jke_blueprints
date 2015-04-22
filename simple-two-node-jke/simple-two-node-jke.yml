@@ -39,7 +39,7 @@ parameters:
     type: string
     description: Generated for floating IP
     default: 'TODO'
-  ubuntu-trusty-img:
+  server-img:
     type: string
     description: ubuntu-trusty-cloudimg-amd64
   mysql-sg:
@@ -48,25 +48,29 @@ parameters:
   was-liberty-sg:
     type: string
     description: The security group for WAS Liberty (allows for communication over ports 9080 9443)
-  agent_timeout:
+  timeout:
     type: string
     description: Generated
-    default: '720'
-  component_process_timeout:
+    default: '1440'
+  mysql-bin-dir:
     type: string
     description: Generated
-    default: '720'
+    default: 'TODO'
+  liberty-install-dir:
+    type: string
+    description: Generated
+    default: 'TODO'
 resources:
 
   jke-db:
     type: OS::Nova::Server
     properties:
       user_data_format: RAW
-      user_data: {get_resource: jke-db_mime}
+      user_data: { get_resource: ucd.install.mime }  # OS::Heat::MultipartMime
       networks:
           - port: { get_resource: jke-db_private_port  }
       name: jke-db
-      image: { get_param: ubuntu-trusty-img }  # ubuntu-trusty-cloudimg-amd64
+      image: { get_param: server-img }  # ubuntu-trusty-cloudimg-amd64
       flavor: { get_param: flavor }
       key_name: { get_param: key_name }
       availability_zone: { get_param: availability_zone }
@@ -75,23 +79,24 @@ resources:
     depends_on: MySQL_Server
     type: IBM::UrbanCode::SoftwareDeploy::UCD
     properties:
-      apply_config: { get_resource: jke.db_sw_config }
+      apply_config: { get_resource: jke.db_sw_config }  # IBM::UrbanCode::SoftwareConfig::UCD
       server: jke-db
       version: "LATEST"
-      agent_timeout: { get_param: agent_timeout }
+      agent_timeout: { get_param: timeout }  # Generated
 
   jke.db_sw_config:
     type: IBM::UrbanCode::SoftwareConfig::UCD
     properties:
       name: "jke.db"
       component_process: deploy
-      component_process_timeout: { get_param: component_process_timeout }
+      component_process_timeout: { get_param: timeout }  # Generated
       ucd_server_url: { get_param: ucd_server_url } # these should come from resource_tree
       ucd_username: { get_param: ucd_user }
       ucd_password: { get_param: ucd_password }
       application: { get_attr: [resource_tree, application_name] }
       environment_name: { get_attr: [resource_tree, environment_name] }
       inputs:
+        mysql.bin.dir: { get_param: mysql-bin-dir }
 
   MySQL_Server:
     type: IBM::UrbanCode::SoftwareDeploy::UCD
@@ -99,26 +104,20 @@ resources:
       apply_config: { get_resource: MySQL_Server_sw_config }
       server: jke-db
       version: "LATEST"
-      agent_timeout: { get_param: agent_timeout }  # Generated
+      agent_timeout: { get_param: timeout }  # Generated
 
   MySQL_Server_sw_config:
     type: IBM::UrbanCode::SoftwareConfig::UCD
     properties:
       name: "MySQL Server"
       component_process: deploy
-      component_process_timeout: { get_param: component_process_timeout }  # Generated
+      component_process_timeout: { get_param: timeout }  # Generated
       ucd_server_url: { get_param: ucd_server_url } # these should come from resource_tree
       ucd_username: { get_param: ucd_user }
       ucd_password: { get_param: ucd_password }
       application: { get_attr: [resource_tree, application_name] }
       environment_name: { get_attr: [resource_tree, environment_name] }
       inputs:
-
-  jke-db_mime:
-    type: OS::Heat::MultipartMime
-    properties:
-      parts:
-        - config: {get_resource: ucd_agent_install}
 
   jke-db_private_port:
     type: OS::Neutron::Port
@@ -131,11 +130,11 @@ resources:
     type: OS::Nova::Server
     properties:
       user_data_format: RAW
-      user_data: {get_resource: jke-app-srv_mime}
+      user_data: { get_resource: ucd.install.mime }  # OS::Heat::MultipartMime
       networks:
           - port: { get_resource: jke-app-srv_private_port  }
       name: jke-app-srv
-      image: { get_param: ubuntu-trusty-img }  # ubuntu-trusty-cloudimg-amd64
+      image: { get_param: server-img }  # ubuntu-trusty-cloudimg-amd64
       flavor: { get_param: flavor }
       key_name: { get_param: key_name }
       availability_zone: { get_param: availability_zone }
@@ -153,21 +152,22 @@ resources:
       apply_config: { get_resource: jke.war_sw_config }
       server: jke-app-srv
       version: "LATEST"
-      agent_timeout: { get_param: agent_timeout }  # Generated
+      agent_timeout: { get_param: timeout }  # Generated
 
   jke.war_sw_config:
     type: IBM::UrbanCode::SoftwareConfig::UCD
     properties:
       name: "jke.war"
       component_process: deploy
-      component_process_timeout: { get_param: component_process_timeout }  # Generated
+      component_process_timeout: { get_param: timeout }  # Generated
       ucd_server_url: { get_param: ucd_server_url } # these should come from resource_tree
       ucd_username: { get_param: ucd_user }
       ucd_password: { get_param: ucd_password }
       application: { get_attr: [resource_tree, application_name] }
       environment_name: { get_attr: [resource_tree, environment_name] }
       inputs:
-        JKE_DB_HOST: { get_attr: [jke-db, first_address] } # IP Address for 'jke-db'   (key: jke-db)
+        jke.db.host: { get_attr: [jke-db, first_address] } # IP Address for 'jke-db'   (key: jke-db)
+        liberty.install.dir: { get_param: liberty-install-dir }
 
   WebSphere_Liberty_Profile:
     depends_on: jke.db
@@ -176,26 +176,21 @@ resources:
       apply_config: { get_resource: WebSphere_Liberty_Profile_sw_config }
       server: jke-app-srv
       version: "LATEST"
-      agent_timeout: { get_param: agent_timeout }  # Generated
+      agent_timeout: { get_param: timeout }  # Generated
 
   WebSphere_Liberty_Profile_sw_config:
     type: IBM::UrbanCode::SoftwareConfig::UCD
     properties:
       name: "WebSphere Liberty Profile"
       component_process: deploy
-      component_process_timeout: { get_param: component_process_timeout }  # Generated
+      component_process_timeout: { get_param: timeout }  # Generated
       ucd_server_url: { get_param: ucd_server_url } # these should come from resource_tree
       ucd_username: { get_param: ucd_user }
       ucd_password: { get_param: ucd_password }
       application: { get_attr: [resource_tree, application_name] }
       environment_name: { get_attr: [resource_tree, environment_name] }
       inputs:
-
-  jke-app-srv_mime:
-    type: OS::Heat::MultipartMime
-    properties:
-      parts:
-        - config: {get_resource: ucd_agent_install}
+        liberty.install.dir: { get_param: liberty-install-dir }  # Generated
 
   jke-app-srv_private_port:
     type: OS::Neutron::Port
@@ -214,7 +209,16 @@ resources:
        application: JKE
        base_resource_group:
 
-  ucd_agent_install:
+  ucd.install.mime:
+    type: OS::Heat::MultipartMime
+    properties:
+      parts:
+        - config: {get_resource: ucd_agent_install_win}
+          subtype: "x-shellscript"
+        - config: {get_resource: ucd_agent_install_linux}
+          subtype: "x-shellscript"
+        
+  ucd_agent_install_linux:
     type: OS::Heat::SoftwareConfig
     properties:
       config:
@@ -250,6 +254,69 @@ resources:
             _agent_version_ : 7.1
             _agent_team_ :
 
+  ucd_agent_install_win:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      config:
+        str_replace:
+          template: |
+            <powershell>
+            #ps1_sysnative
+            [System.Net.ServicePointManager]::ServerCertificateValidationCallback = {$true}
+            $platform = "win"
+            $Arch = "$platform-x86_64"
+            if(0 -eq (Get-WmiObject -class "Win32_Processor" -namespace "root\cimV2" -compute .)){$Arch = "$platform-x86"}
+
+            $AgentArchive = "ibm-ucd-agent-$Arch.zip"
+            $UcdRemoteHost = "_ucd_server_url_"
+            $AgentArgs = ""
+
+            $WebClient = New-Object System.Net.WebClient
+            $WebClient.Credentials = New-Object System.Net.NetworkCredential("_ucd_user_","_ucd_password_")
+            If( "_ucd_relay_url_" -ne "None" )
+            {
+                $UcdRemoteHost="_ucd_relay_url_"
+                $WebProxy = New-Object System.Net.WebProxy
+                $WebProxy.Address = "_ucd_relay_url_" + ":20080"
+                $WebClient.Proxy = $WebProxy
+                $AgentArgs = "-r -d"
+            }
+
+            $Source="_ucd_server_url_/cli/version/downloadArtifacts?component=ucd-agent-$Arch&version=_agent_version_&singleFilePath=$AgentArchive"
+            $Destination="$env:TEMP\$AgentArchive"
+
+            $WebClient.DownloadFile($Source,$Destination)
+            $shell = new-object -com shell.application
+            $zip = $shell.NameSpace($Destination)
+            foreach($item in $zip.items()){$shell.Namespace("$env:TEMP").copyhere($item)}
+
+            $UcdAgentName = _agent_name_
+
+            $args = @()
+            $args += ("-t", "`"_agent_team_`"")
+            $args += ("-s", "$UcdRemoteHost")
+            $args += ("$AgentArgs")
+            $args += ("-x", "start")
+            $args += ("-n", "`"$UcdAgentName`"")
+            $cmd = "$env:TEMP\ibm-ucd-agent-install\install-agent-with-options.ps1"
+
+            Invoke-Expression "$cmd $args"
+            </powershell>
+          params:
+            _agent_name_:
+               str_replace:
+                  template: |
+                    "_application_name_._environment_name_"
+                  params:
+                    _application_name_: { get_attr: [resource_tree, application_name ] }
+                    _environment_name_: { get_param: "OS::stack_name" }
+            _ucd_server_url_: { get_param: ucd_server_url }
+            _ucd_relay_url_: { get_param: ucd_relay_url }
+            _ucd_user_ : { get_param: ucd_user }
+            _ucd_password_ : { get_param: ucd_password }
+            _agent_version_ : 7.1
+            _agent_team_ :
+            
 outputs:
   blueprint_url:
     description: Blueprint Origin URL
