@@ -1,4 +1,5 @@
 # Configuration file template
+# Updated configurations for OpenStack
 
 parameters:
   mysql-bin-dir: /usr/bin
