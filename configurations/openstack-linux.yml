@@ -3,16 +3,16 @@
 parameters:
   mysql-bin-dir: /usr/bin
   liberty-install-dir: /opt/was/liberty
-  server-img: "TODO"
+  server-img: "e4b9ea67-688a-4c07-ba4f-f1649b1be11c" # ubuntu-14.04-amd64-heat-tools
   timeout: "1440"
-  mysql-sg: "TODO"
-  was-liberty-sg: "TODO"
+  mysql-sg: "7b5b88ce-22c2-4511-a9f2-6c7f87090402" # mysql-sg
+  was-liberty-sg: "2fc88ade-17b0-4602-acf5-c6e03903e342" # was-liberty-sg
   flavor: "m1.medium"
   key_name: "demo_key"
   availability_zone: "nova"
-  private_network: "TODO"
-  ucd_server_url: "http://192.168.27.100:8081"
+  private_network: "dec76954-f367-4de8-bba7-5b8a7992612d" # private
+  ucd_server_url: "http://192.168.27.100:8080"
   ucd_user: "admin"
   ucd_password: "admin"
   ucd_relay_url: "None"
-  public_network: "TODO" # public
+  public_network: "4a4f7b4a-596b-4396-a7ad-efdcf26aa367" # public
